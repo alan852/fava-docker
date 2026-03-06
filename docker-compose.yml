@@ -1,0 +1,7 @@
+services:
+  fava:
+    image: fava:latest
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./example_data:/workspace
