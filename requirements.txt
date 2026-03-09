@@ -1,3 +1,15 @@
-beancount==3.2.0
+beancount
 
-fava==1.30.12
+beancount_interpolate
+beancount-reds-plugins
+beancount_share
+
+fava
+fava-dashboards==2.0.0b5
+fava-investor
+fava-portfolio-returns
+
+beancount-lazy-plugins @ git+https://github.com/Evernight/beancount-lazy-plugins
+beantab @ git+https://github.com/Evernight/beantab
+fava-currency-tracker @ git+https://github.com/Evernight/fava-currency-tracker
+fava-git @ git+https://github.com/Evernight/fava-git

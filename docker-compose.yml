@@ -1,7 +1,12 @@
 services:
   fava:
-    image: fava:latest
+    image: ghcr.io/alan852/fava-docker:latest
+    container_name: fava
+    user: "${PUID}:${PGID}"
     ports:
       - "5000:5000"
     volumes:
       - ./example_data:/workspace
+    env_file:
+      - .env
+    

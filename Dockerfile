@@ -7,6 +7,10 @@ RUN apt-get update \
     && apt-get autoremove --purge  -y \
     && rm -rf /var/lib/apt/lists/*
 
+RUN git config --global --add safe.directory /workspace \
+    && git config --global user.email "fava@homelab" \
+    && git config --global user.name "fava"
+
 COPY ./requirements.txt /tmp/requirements.txt
 RUN python -m venv /opt/venv \
     && pip3 install --no-cache-dir -r /tmp/requirements.txt
@@ -19,4 +23,4 @@ EXPOSE 5000
 WORKDIR /workspace
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD [ "fava", "main.beancount" ]
+CMD [ "fava", "main.bean" ]
