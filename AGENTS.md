@@ -61,7 +61,7 @@ fava-docker/
 - All Git repositories are pinned to specific, immutable commit SHAs to ensure supply chain integrity and reproducible builds.
 
 ### 3.4 CI/CD Workflows
-- **`docker.yml`**: Supports multi-architecture builds (`linux/amd64` and `linux/arm64`) using QEMU and Docker Buildx. Publishes tagged releases to `ghcr.io/alan852/fava-docker` on semver tags or branch pushes.
+- **`docker.yml`**: Supports multi-architecture builds (`linux/amd64` and `linux/arm64`) using QEMU and Docker Buildx. Publishes tagged releases to `ghcr.io/alan852/fava-docker` exclusively on semver tags (`v*.*.*`).
 - **`auto-update.yml`**: Runs on a weekly cron schedule (or manual trigger). Checks upstream Git repositories for newer commits, updates `requirements.txt`, creates and tags a patch release, and publishes the rebuilt multi-arch images.
 
 ---
