@@ -5,7 +5,7 @@ beancount-reds-plugins
 beancount_share
 
 fava
-fava-dashboards==2.0.0b5
+fava-dashboards
 fava-investor
 fava-portfolio-returns
 
