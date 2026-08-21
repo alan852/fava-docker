@@ -1,0 +1,139 @@
+name: auto-update-dependencies
+
+on:
+  schedule:
+    # Run every Monday at 04:00 UTC
+    - cron: "0 4 * * 1"
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  check-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check and update upstream Git dependencies
+        id: check_deps
+        run: |
+          python3 -c "
+          import re, subprocess, sys
+
+          req_file = 'requirements.txt'
+          with open(req_file, 'r') as f:
+              content = f.read()
+
+          def get_latest_sha(repo_path):
+              url = f'https://github.com/{repo_path}.git'
+              res = subprocess.run(['git', 'ls-remote', url, 'HEAD'], capture_output=True, text=True, check=True)
+              return res.stdout.strip().split()[0]
+
+          def replacer(match):
+              pkg_name = match.group(1)
+              base_url = match.group(2)
+              latest_sha = get_latest_sha(base_url)
+              return f'{pkg_name} @ git+https://github.com/{base_url}@{latest_sha}'
+
+          new_content = re.sub(r'([a-zA-Z0-9_\-]+)\s*@\s*git\+https://github\.com/([a-zA-Z0-9_\-]+/[a-zA-Z0-9_\-]+)(?:@[a-f0-9]+)?', replacer, content)
+
+          output_path = sys.argv[1]
+          if new_content != content:
+              with open(req_file, 'w') as f:
+                  f.write(new_content)
+              print('Updates found in upstream Git repositories.', file=sys.stderr)
+              with open(output_path, 'a') as fh:
+                  fh.write('has_updates=true\n')
+          else:
+              print('All Git dependencies are already up to date.', file=sys.stderr)
+              with open(output_path, 'a') as fh:
+                  fh.write('has_updates=false\n')
+          " "$GITHUB_OUTPUT"
+
+      - name: Set up QEMU
+        if: steps.check_deps.outputs.has_updates == 'true'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        if: steps.check_deps.outputs.has_updates == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Calculate next patch version tag
+        if: steps.check_deps.outputs.has_updates == 'true'
+        id: bump_version
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          NEXT_TAG=$(python3 -c "
+          import re
+          m = re.match(r'^v?(\d+)\.(\d+)\.(\d+)$', '$LATEST_TAG')
+          if m:
+              major, minor, patch = map(int, m.groups())
+              print(f'v{major}.{minor}.{patch + 1}')
+          else:
+              print('v1.0.1')
+          ")
+          echo "Next release tag: $NEXT_TAG"
+          echo "next_tag=$NEXT_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push updated requirements
+        if: steps.check_deps.outputs.has_updates == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add requirements.txt
+          git commit -m "chore(deps): bump upstream plugins to latest commit hashes [skip ci]"
+          git push origin main
+          git tag ${{ steps.bump_version.outputs.next_tag }}
+          git push origin ${{ steps.bump_version.outputs.next_tag }}
+
+      - name: Log in to GitHub Container Registry
+        if: steps.check_deps.outputs.has_updates == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push multi-arch Docker image
+        if: steps.check_deps.outputs.has_updates == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.bump_version.outputs.next_tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.bump_version.outputs.next_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create GitHub Release
+        if: steps.check_deps.outputs.has_updates == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.bump_version.outputs.next_tag }} \
+            --title "${{ steps.bump_version.outputs.next_tag }} - Automated Upstream Plugin Updates" \
+            --notes "Automated release triggered by upstream plugin updates.
+
+          - Updated \`requirements.txt\` with latest upstream Git commit hashes.
+          - Rebuilt and published multi-arch Docker image (\`linux/amd64\`, \`linux/arm64\`) to GHCR."

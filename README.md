@@ -156,11 +156,11 @@ docker run -d \
 
 ---
 
-## 🔄 CI/CD & Releases
+## 🔄 CI/CD & Automation
 
-Automated multi-platform builds (`amd64` and `arm64`) are managed via GitHub Actions:
-- Pull requests and branch pushes run validation builds.
-- Pushing a semantic version tag (e.g. `git tag v1.0.0 && git push origin v1.0.0`) automatically builds and publishes the release image to GitHub Container Registry (`ghcr.io/alan852/fava-docker`).
+- **Multi-Platform Container Builds**: Automated multi-architecture builds (`linux/amd64` and `linux/arm64`) using Docker Buildx and QEMU, published to GitHub Container Registry (`ghcr.io/alan852/fava-docker`).
+- **Automated Upstream Dependency Updates**: A scheduled GitHub Actions workflow (`auto-update-dependencies`) runs weekly to check upstream Beancount and Fava plugin repositories for new commits, update `requirements.txt`, tag new patch versions, and rebuild the published containers.
+- **Manual / Tagged Releases**: Pushing a semantic version tag (e.g. `git tag v1.1.0 && git push origin v1.1.0`) triggers an immediate build and release.
 
 ---
 
