@@ -2,11 +2,16 @@ services:
   fava:
     image: ghcr.io/alan852/fava-docker:latest
     container_name: fava
-    user: "${PUID}:${PGID}"
+    restart: unless-stopped
+    user: "${PUID:-1000}:${PGID:-1000}"
+    # Security: Bind to 127.0.0.1 by default to prevent unauthenticated network access.
+    # Expose externally only through an authenticated reverse proxy (e.g. Authelia, Traefik, Tailscale).
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     volumes:
       - ./example_data:/workspace
     env_file:
       - .env
-    
+    environment:
+      - TZ=${TZ:-Europe/London}
+      - BEANCOUNT_FILE=${BEANCOUNT_FILE:-main.bean}

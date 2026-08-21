@@ -9,7 +9,7 @@ fava-dashboards==2.0.0b5
 fava-investor
 fava-portfolio-returns
 
-beancount-lazy-plugins @ git+https://github.com/Evernight/beancount-lazy-plugins
-beantab @ git+https://github.com/Evernight/beantab
-fava-currency-tracker @ git+https://github.com/Evernight/fava-currency-tracker
-fava-git @ git+https://github.com/Evernight/fava-git
+beancount-lazy-plugins @ git+https://github.com/Evernight/beancount-lazy-plugins@d22b25b9a5258c312709a7e181b05bc8ce05be6c
+beantab @ git+https://github.com/Evernight/beantab@702b7cc5b4201b386aca80c85169c78c0d0c0c26
+fava-currency-tracker @ git+https://github.com/Evernight/fava-currency-tracker@1f33d85ae654bfd6f6b57f2b272c09d9e295fbdf
+fava-git @ git+https://github.com/Evernight/fava-git@18a9b6e64b636bfa8673eee808892da01adf661b

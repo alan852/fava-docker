@@ -1,2 +1,34 @@
+# Environment and local secret configuration
 .env
+.env.*
+!.env.example
+
+# Sensitive financial ledgers, exports, and receipts
+*.bean
+*.beancount
+*.ledger
+*.csv
+*.ofx
+*.qif
+*.pdf
 example_data/*
+!example_data/.gitkeep
+!example_data/main.bean.example
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+env/
+venv/
+ENV/
+
+# Editor and OS metadata
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
