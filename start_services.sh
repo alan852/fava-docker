@@ -18,10 +18,16 @@ fi
 
 BEANCOUNT_FILE="${BEANCOUNT_FILE:-main.bean}"
 
+# Normalize to absolute path required by Fava when BEANCOUNT_FILE environment variable is present
+if [[ "${BEANCOUNT_FILE}" != /* ]]; then
+    BEANCOUNT_FILE="/workspace/${BEANCOUNT_FILE}"
+fi
+export BEANCOUNT_FILE
+
 # If the specified beancount file doesn't exist, create a basic template so Fava can start
-if [ ! -f "/workspace/${BEANCOUNT_FILE}" ]; then
-    echo "Warning: /workspace/${BEANCOUNT_FILE} not found. Creating minimal starter ledger..."
-    cat << 'EOF' > "/workspace/${BEANCOUNT_FILE}"
+if [ ! -f "${BEANCOUNT_FILE}" ]; then
+    echo "Warning: ${BEANCOUNT_FILE} not found. Creating minimal starter ledger..."
+    cat << 'EOF' > "${BEANCOUNT_FILE}"
 option "title" "Personal Ledger"
 option "operating_currency" "USD"
 
@@ -29,6 +35,12 @@ option "operating_currency" "USD"
 1970-01-01 open Income:Salary USD
 1970-01-01 open Expenses:General USD
 EOF
+fi
+
+# Start scheduled auto-commit service if configured
+if [ -n "${AUTO_COMMIT_CRON:-}" ]; then
+    echo "Starting auto-commit daemon with cron schedule: '${AUTO_COMMIT_CRON}'..."
+    python3 /scripts/auto_commit.py &
 fi
 
 echo "Starting Fava with ledger: ${BEANCOUNT_FILE}..."

@@ -15,3 +15,5 @@ services:
     environment:
       - TZ=${TZ:-Europe/London}
       - BEANCOUNT_FILE=${BEANCOUNT_FILE:-main.bean}
+      - AUTO_COMMIT_CRON=${AUTO_COMMIT_CRON:-}
+      - AUTO_COMMIT_MESSAGE=${AUTO_COMMIT_MESSAGE:-}

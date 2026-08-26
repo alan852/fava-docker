@@ -1,0 +1,13 @@
+.git
+.github
+.env
+.env.*
+*.bean
+*.beancount
+*.ledger
+example_data/
+.venv/
+__pycache__/
+*.pyc
+*.md
+LICENSE

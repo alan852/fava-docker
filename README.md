@@ -14,7 +14,7 @@ A lightweight, secure, and batteries-included Docker image for [Beancount](https
 - **Python 3.12 Multi-Stage Build**: Minimal attack surface with dependencies isolated in `/opt/venv`.
 - **Batteries Included**: Curated collection of essential Beancount plugins and Fava extensions pre-installed.
 - **Supply Chain Security**: Direct Git dependencies pinned to immutable commit hashes.
-- **Git Integration**: Built-in Git support with automatic workspace repository initialization, compatible with [`fava-git`](https://github.com/Evernight/fava-git).
+- **Git Integration**: Built-in Git support with automatic workspace repository initialization, compatible with [`fava-git`](https://github.com/alan852/fava-git).
 - **Process Management & Healthcheck**: Managed by [`dumb-init`](https://github.com/Yelp/dumb-init) for graceful shutdowns and built-in Docker `HEALTHCHECK`.
 - **Permission Friendly**: Supports custom user and group IDs (`PUID` / `PGID`) to match host file ownership and prevent permission conflicts.
 - **Localhost by Default**: Safe local network defaults to protect unauthenticated financial ledger data.
@@ -38,15 +38,9 @@ A lightweight, secure, and batteries-included Docker image for [Beancount](https
 | **[beancount](https://github.com/beancount/beancount)** | Core | Plain text, double-entry bookkeeping computer language. |
 | **[fava](https://github.com/beancount/fava)** | Core | Web interface for Beancount. |
 | **[fava-dashboards](https://github.com/andreasgerstmayr/fava-dashboards)** | Extension | Custom interactive dashboards and visualization panels. |
-| **[fava-investor](https://github.com/redstreet/fava_investor)** | Extension | Investment analytics, asset allocation, and capital gains tracking. |
-| **[fava-portfolio-returns](https://github.com/andreasgerstmayr/fava-portfolio-returns)** | Extension | Calculate and display portfolio returns (IRR, time-weighted returns). |
-| **[fava-currency-tracker](https://github.com/Evernight/fava-currency-tracker)** | Extension | Multi-currency portfolio tracker and valuations. |
-| **[fava-git](https://github.com/Evernight/fava-git)** | Extension | Version control integration and history view in Fava. |
-| **[beantab](https://github.com/Evernight/beantab)** | Extension | Tabular editor and transaction helpers. |
-| **[beancount_interpolate](https://github.com/redstreet/beancount_interpolate)** | Plugin | Interpolation and automated leg calculations. |
-| **[beancount-reds-plugins](https://github.com/redstreet/beancount_reds_plugins)** | Plugin | Collection of plugins for asset tracking and zero-sum operations. |
-| **[beancount_share](https://github.com/redstreet/beancount_share)** | Plugin | Split expenses and shared-cost accounting. |
+| **[fava-git](https://github.com/alan852/fava-git)** | Extension | Version control integration and history view in Fava. |
 | **[beancount-lazy-plugins](https://github.com/Evernight/beancount-lazy-plugins)** | Plugin | Performance optimization and lazy plugin loading. |
+| **[beancount-fava-plugin-uk-tax-return](https://github.com/alan852/beancount-fava-plugin-uk-tax-return)** | Extension | UK Self Assessment income tax return calculation and reporting. |
 
 ---
 
@@ -102,8 +96,10 @@ docker run -d \
 | `PUID` | `1000` | Host user ID for file permission alignment. |
 | `PGID` | `1000` | Host group ID for file permission alignment. |
 | `TZ` | `Europe/London` | Container timezone. |
-| `GIT_AUTHOR_NAME` | `fava` | Fallback author name for Git commits via `fava-git`. |
-| `GIT_AUTHOR_EMAIL` | `fava@homelab` | Fallback author email for Git commits via `fava-git`. |
+| `GIT_AUTHOR_NAME` | `fava` | Fallback author name for Git commits via `fava-git` or auto-commit. |
+| `GIT_AUTHOR_EMAIL` | `fava@homelab` | Fallback author email for Git commits via `fava-git` or auto-commit. |
+| `AUTO_COMMIT_CRON` | *(disabled)* | Standard 5-field cron expression (e.g. `*/15 * * * *` or `0 * * * *`) for automatic workspace Git commits. |
+| `AUTO_COMMIT_MESSAGE` | `Auto-commit: %Y-%m-%d %H:%M:%S UTC` | Commit message template with `strftime` formatting tokens. |
 
 ---
 
@@ -118,15 +114,8 @@ option "operating_currency" "EUR"
 
 ;; Fava Extensions
 2020-01-01 custom "fava-extension" "fava_dashboards"
-2020-01-01 custom "fava-extension" "fava_investor"
-2020-01-01 custom "fava-extension" "fava_portfolio_returns"
 2020-01-01 custom "fava-extension" "fava_git"
-2020-01-01 custom "fava-extension" "fava_currency_tracker"
-2020-01-01 custom "fava-extension" "beantab"
-
-;; Beancount Plugins
-plugin "beancount_interpolate"
-plugin "beancount_share"
+2020-01-01 custom "fava-extension" "fava_uk_tax_return"
 
 ;; Accounts & Opening Balances
 1970-01-01 open Assets:Checking:USD USD

@@ -1,37 +1,52 @@
+# syntax=docker/dockerfile:1
+
 # Stage 1: Build dependencies in isolated virtual environment
 FROM python:3.12-slim AS builder
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends git build-essential \
+ENV PIP_NO_CACHE_DIR=0 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_WARN_SCRIPT_LOCATION=1
+
+# Install build dependencies reusing apt cache
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY ./requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Install python dependencies with pip cache mount and binary wheel preference
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --prefer-binary -r /tmp/requirements.txt \
+    && find /opt/venv -type d -name "__pycache__" -prune -exec rm -rf {} +
 
 # Stage 2: Minimal runtime image
 FROM python:3.12-slim AS runtime
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends git dumb-init \
+ENV PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    FAVA_HOST="0.0.0.0"
+
+# Install runtime dependencies reusing apt cache
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        dumb-init \
     && rm -rf /var/lib/apt/lists/*
 
-RUN adduser --uid 1245 --disabled-password --gecos "" beancount-user
-
-# Allow git operations across mounted volumes regardless of custom PUID/PGID
-RUN git config --system --add safe.directory '*'
+RUN adduser --uid 1245 --disabled-password --gecos "" beancount-user \
+    && git config --system --add safe.directory '*'
 
 COPY --from=builder /opt/venv /opt/venv
-COPY start_services.sh /scripts/start_services.sh
-RUN chmod +x /scripts/start_services.sh
+COPY --chmod=755 start_services.sh auto_commit.py /scripts/
 
-ENV PATH="/opt/venv/bin:$PATH"
-ENV FAVA_HOST="0.0.0.0"
 EXPOSE 5000
-
 WORKDIR /workspace
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
