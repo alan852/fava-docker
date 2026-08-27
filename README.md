@@ -41,6 +41,7 @@ A lightweight, secure, and batteries-included Docker image for [Beancount](https
 | **[fava-git](https://github.com/alan852/fava-git)** | Extension | Version control integration and history view in Fava. |
 | **[beancount-lazy-plugins](https://github.com/Evernight/beancount-lazy-plugins)** | Plugin | Performance optimization and lazy plugin loading. |
 | **[beancount-fava-plugin-uk-tax-return](https://github.com/alan852/beancount-fava-plugin-uk-tax-return)** | Extension | UK Self Assessment income tax return calculation and reporting. |
+| **[fava-repayment](https://github.com/alan852/beancount-fava-plugin-repayment)** | Extension | Credit card statement settlement and repayment tracking. |
 
 ---
 
@@ -116,6 +117,7 @@ option "operating_currency" "EUR"
 2020-01-01 custom "fava-extension" "fava_dashboards"
 2020-01-01 custom "fava-extension" "fava_git"
 2020-01-01 custom "fava-extension" "fava_uk_tax_return"
+2020-01-01 custom "fava-extension" "fava_repayment"
 
 ;; Accounts & Opening Balances
 1970-01-01 open Assets:Checking:USD USD
