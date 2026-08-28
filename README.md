@@ -40,7 +40,7 @@ A lightweight, secure, and batteries-included Docker image for [Beancount](https
 | **[fava-dashboards](https://github.com/andreasgerstmayr/fava-dashboards)** | Extension | Custom interactive dashboards and visualization panels. |
 | **[fava-git](https://github.com/alan852/fava-git)** | Extension | Version control integration and history view in Fava. |
 | **[beancount-lazy-plugins](https://github.com/Evernight/beancount-lazy-plugins)** | Plugin | Performance optimization and lazy plugin loading. |
-| **[beancount-fava-plugin-uk-tax-return](https://github.com/alan852/beancount-fava-plugin-uk-tax-return)** | Extension | UK Self Assessment income tax return calculation and reporting. |
+| **[fava-uk-tax-return](https://github.com/alan852/beancount-fava-plugin-uk-tax-return)** | Extension | UK Self Assessment income tax return calculation and reporting. |
 | **[fava-repayment](https://github.com/alan852/beancount-fava-plugin-repayment)** | Extension | Credit card statement settlement and repayment tracking. |
 
 ---
