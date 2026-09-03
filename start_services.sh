@@ -1,6 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
+# Ensure running UID exists in /etc/passwd to resolve username and home directory
+if ! whoami &>/dev/null; then
+    if [ -w /etc/passwd ]; then
+        echo "beancount-user:x:$(id -u):$(id -g):beancount-user:${HOME:-/home/beancount-user}:/bin/bash" >> /etc/passwd
+    fi
+fi
+
 # Initialize git repository if not present
 if [ ! -d "/workspace/.git" ]; then
     echo "Initializing new Git repository in /workspace..."

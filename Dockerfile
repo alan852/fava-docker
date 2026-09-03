@@ -11,8 +11,8 @@ ENV PIP_NO_CACHE_DIR=0 \
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
-        git \
-        build-essential \
+    git \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python -m venv /opt/venv
@@ -30,17 +30,21 @@ FROM python:3.12-slim AS runtime
 
 ENV PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
-    FAVA_HOST="0.0.0.0"
+    FAVA_HOST="0.0.0.0" \
+    HOME="/home/beancount-user"
 
 # Install runtime dependencies reusing apt cache
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
-        git \
-        dumb-init \
+    git \
+    dumb-init \
     && rm -rf /var/lib/apt/lists/*
 
-RUN adduser --uid 1245 --disabled-password --gecos "" beancount-user \
+RUN addgroup --gid 1000 beancount-user \
+    && adduser --uid 1000 --gid 1000 --disabled-password --gecos "" beancount-user \
+    && mkdir -p /home/beancount-user && chmod 777 /home/beancount-user \
+    && chmod 666 /etc/passwd /etc/group \
     && git config --system --add safe.directory '*'
 
 COPY --from=builder /opt/venv /opt/venv
@@ -50,7 +54,7 @@ EXPOSE 5000
 WORKDIR /workspace
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD python3 -c 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:5000").read()' || exit 1
+    CMD python3 -c 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:5000").read()' || exit 1
 
 USER beancount-user
 
