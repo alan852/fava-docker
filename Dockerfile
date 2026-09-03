@@ -44,7 +44,7 @@ RUN adduser --uid 1245 --disabled-password --gecos "" beancount-user \
     && git config --system --add safe.directory '*'
 
 COPY --from=builder /opt/venv /opt/venv
-COPY --chmod=755 start_services.sh auto_commit.py /scripts/
+COPY --chmod=755 start_services.sh auto_commit.py repayment_notify.py /scripts/
 
 EXPOSE 5000
 WORKDIR /workspace

@@ -41,7 +41,7 @@ A lightweight, secure, and batteries-included Docker image for [Beancount](https
 | **[fava-git](https://github.com/alan852/fava-git)** | Extension | Version control integration and history view in Fava. |
 | **[beancount-lazy-plugins](https://github.com/Evernight/beancount-lazy-plugins)** | Plugin | Performance optimization and lazy plugin loading. |
 | **[fava-uk-tax-return](https://github.com/alan852/beancount-fava-plugin-uk-tax-return)** | Extension | UK Self Assessment income tax return calculation and reporting. |
-| **[fava-repayment](https://github.com/alan852/beancount-fava-plugin-repayment)** | Extension | Credit card statement settlement and repayment tracking. |
+| **[fava-repayment](https://github.com/alan852/beancount-fava-plugin-repayment)** | Extension | Credit card statement settlement tracking and automated due date notifications. |
 
 ---
 
@@ -101,6 +101,13 @@ docker run -d \
 | `GIT_AUTHOR_EMAIL` | `fava@homelab` | Fallback author email for Git commits via `fava-git` or auto-commit. |
 | `AUTO_COMMIT_CRON` | *(disabled)* | Standard 5-field cron expression (e.g. `*/15 * * * *` or `0 * * * *`) for automatic workspace Git commits. |
 | `AUTO_COMMIT_MESSAGE` | `Auto-commit: %Y-%m-%d %H:%M:%S UTC` | Commit message template with `strftime` formatting tokens. |
+| `REPAYMENT_NOTIFY_CRON` | *(disabled)* | Standard 5-field cron expression (e.g. `0 9 * * *` for daily at 09:00) for automated due date notifications. |
+| `APPRISE_API_URL` | *(none)* | Apprise-API server endpoint (e.g. `http://apprise:8000/notify`). |
+| `APPRISE_URLS` | *(none)* | Target notification URLs (stateless mode, e.g. `tgram://<bot_token>/<chat_id>`). |
+| `APPRISE_KEY` | *(none)* | Pre-configured configuration key in Apprise-API (stateful mode). |
+| `APPRISE_TAGS` | *(none)* | Tag filter for stateful notifications. |
+| `REPAYMENT_NOTIFY_DAYS` | `7,3,1,0` | Comma-separated threshold days before due date to alert (`0` = on due date). |
+| `REPAYMENT_NOTIFY_STATE_FILE` | `/workspace/.fava_repayment_state.json` | Deduplication cache to prevent repeated alerts on the same day. |
 
 ---
 
@@ -127,6 +134,39 @@ option "operating_currency" "EUR"
 2024-01-15 * "Supermarket" "Groceries"
   Expenses:Groceries        54.20 USD
   Assets:Checking:USD      -54.20 USD
+```
+
+---
+
+## 🔔 Automated Due Date Notifications (Apprise-API & Telegram)
+
+`fava-repayment` includes automated settlement tracking and payment deadline alerts. You can receive scheduled reminders through [Apprise-API](https://github.com/caronc/apprise-api) to **Telegram**, Discord, Slack, Pushover, or 80+ other services.
+
+### 1. Configure Scheduled Notifications
+
+In your `.env` file, set your cron schedule and Apprise parameters:
+
+```env
+# Run notification check daily at 09:00 AM
+REPAYMENT_NOTIFY_CRON="0 9 * * *"
+
+# Stateless Mode: Direct Apprise target URL (e.g. Telegram)
+APPRISE_API_URL="http://localhost:8000/notify"
+APPRISE_URLS="tgram://<bot_token>/<chat_id>"
+
+# Or Stateful Mode: Pre-configured key in Apprise-API
+# APPRISE_API_URL="http://localhost:8000"
+# APPRISE_KEY="finance"
+```
+
+The in-container notification daemon evaluates your ledger against statement due dates. Sent notifications are automatically recorded in `/workspace/.fava_repayment_state.json` to prevent duplicate alerts on the same day.
+
+### 2. Manual / Dry-Run Test
+
+You can preview notifications at any time against your ledger without sending real HTTP requests:
+
+```bash
+docker compose exec fava fava-repayment notify /workspace/main.bean --dry-run
 ```
 
 ---

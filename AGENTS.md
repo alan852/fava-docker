@@ -30,8 +30,10 @@ fava-docker/
 ├── LICENSE                   # GNU General Public License v3.0
 ├── README.md                 # User-facing documentation & quickstart guide
 ├── AGENTS.md                 # Developer & agent maintenance guide
+├── auto_commit.py            # Cron-based automated workspace Git commit daemon
 ├── docker-compose.yml        # Compose definition for local deployment and testing
 ├── example_data/             # Mount directory for sample/user Beancount ledger files
+├── repayment_notify.py       # Cron-based credit card due date notification daemon (Apprise-API)
 ├── requirements.txt          # Python dependencies with pinned Git commit hashes
 └── start_services.sh         # Container entrypoint script
 ```
@@ -43,7 +45,7 @@ fava-docker/
 ### 3.1 Dockerfile
 - **Multi-Stage Build**:
   - `builder` stage: Installs build tools and installs all Python packages into `/opt/venv`.
-  - `runtime` stage: Minimal `python:3.12-slim` image containing only runtime dependencies (`git`, `dumb-init`), copied `/opt/venv`, and startup scripts.
+  - `runtime` stage: Minimal `python:3.12-slim` image containing only runtime dependencies (`git`, `dumb-init`), copied `/opt/venv`, and startup scripts (`start_services.sh`, `auto_commit.py`, `repayment_notify.py`).
 - **Git Compatibility**: Configures system-wide safe directory `git config --system --add safe.directory '*'` to permit Git tracking regardless of host `PUID`/`PGID`.
 - **Healthcheck**: Python standard library healthcheck polling `http://127.0.0.1:5000`.
 - **Entrypoint**: `/usr/bin/dumb-init -- /scripts/start_services.sh`.
@@ -54,9 +56,16 @@ fava-docker/
 - Sets fallback Git identities (`GIT_AUTHOR_NAME`, `GIT_AUTHOR_EMAIL`) only if not previously configured, avoiding overwriting existing user repo configs.
 - Supports configurable ledger filenames via `BEANCOUNT_FILE` (default: `main.bean`).
 - Automatically generates a minimal starter ledger if the target file does not exist, preventing startup crashes.
+- Starts optional background daemons if configured:
+  - `auto_commit.py` when `AUTO_COMMIT_CRON` is set.
+  - `repayment_notify.py` when `REPAYMENT_NOTIFY_CRON` is set.
 - Executes Fava via `exec fava "${BEANCOUNT_FILE}" "$@"` so `dumb-init` supervises Fava directly.
 
-### 3.3 Dependencies (`requirements.txt`)
+### 3.3 Scheduled Daemons
+- **`auto_commit.py`**: Monitors workspace changes and creates automated Git commits on a cron schedule (`AUTO_COMMIT_CRON`).
+- **`repayment_notify.py`**: Evaluates credit card statement due dates and sends alerts via Apprise-API (`fava-repayment notify`) on a cron schedule (`REPAYMENT_NOTIFY_CRON`).
+
+### 3.4 Dependencies (`requirements.txt`)
 - PyPI packages and Git repositories.
 - All Git repositories are pinned to specific, immutable commit SHAs to ensure supply chain integrity and reproducible builds.
 

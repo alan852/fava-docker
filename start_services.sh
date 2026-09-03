@@ -43,5 +43,11 @@ if [ -n "${AUTO_COMMIT_CRON:-}" ]; then
     python3 /scripts/auto_commit.py &
 fi
 
+# Start scheduled repayment due date notification service if configured
+if [ -n "${REPAYMENT_NOTIFY_CRON:-}" ]; then
+    echo "Starting repayment notification daemon with cron schedule: '${REPAYMENT_NOTIFY_CRON}'..."
+    python3 /scripts/repayment_notify.py &
+fi
+
 echo "Starting Fava with ledger: ${BEANCOUNT_FILE}..."
 exec fava "${BEANCOUNT_FILE}" "$@"

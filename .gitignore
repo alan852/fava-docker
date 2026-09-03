@@ -25,6 +25,8 @@ __pycache__/
 env/
 venv/
 ENV/
+.cache/
+.fava_repayment_*.json
 
 # Editor and OS metadata
 .DS_Store
