@@ -7,4 +7,4 @@ croniter
 beancount-lazy-plugins @ git+https://github.com/Evernight/beancount-lazy-plugins@d22b25b9a5258c312709a7e181b05bc8ce05be6c
 fava-git @ git+https://github.com/alan852/fava-git@18a9b6e64b636bfa8673eee808892da01adf661b
 fava-uk-tax-return @ git+https://github.com/alan852/beancount-fava-plugin-uk-tax-return@210f1bb3a9b1505f78061ca1f3cd0a50a681fecf
-fava-repayment @ git+https://github.com/alan852/beancount-fava-plugin-repayment@a9417abf1aa080d636a8be83770bcb41549edb9a
+fava-repayment @ git+https://github.com/alan852/beancount-fava-plugin-repayment@32c0a879086665b06d385decfff9ea09c3651abb
