@@ -53,8 +53,8 @@ COPY --chmod=755 start_services.sh auto_commit.py repayment_notify.py /scripts/
 EXPOSE 5000
 WORKDIR /workspace
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python3 -c 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:5000").read()' || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python3 -c 'import urllib.request; urllib.request.urlopen(urllib.request.Request("http://127.0.0.1:5000/favicon.ico", method="HEAD"))' || exit 1
 
 USER beancount-user
 
